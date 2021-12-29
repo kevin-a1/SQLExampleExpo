@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Constants from "expo-constants";
 import * as SQLite from "expo-sqlite";
+import * as Location from 'expo-location';
 
 function openDatabase() {
   if (Platform.OS === "web") {
@@ -69,6 +70,31 @@ function Items({ done: doneHeading, onPressItem }) {
 }
 
 export default function App() {
+
+  const [ location, setLocation ] = useState(null);
+  const [ errorMsg, setErrorMsg ] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  let texto = 'Waiting..';
+ if (errorMsg) {
+   texto = errorMsg;
+ } else if (location) {
+   texto = JSON.stringify(location);
+ }
+
+
   const [text, setText] = useState(null);
   const [forceUpdate, forceUpdateId] = useForceUpdate();
 
@@ -103,6 +129,7 @@ export default function App() {
       <Text style={styles.heading}>SQLite Example</Text>
 
       {Platform.OS === "web" ? (
+        <>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -110,6 +137,10 @@ export default function App() {
             Expo SQlite is not supported on web!
           </Text>
         </View>
+        <View style={styles.container}>
+          <Text style={styles.paragraph}>{texto}</Text>
+        </View>
+        </>
       ) : (
         <>
           <View style={styles.flexRow}>
@@ -123,6 +154,9 @@ export default function App() {
               style={styles.input}
               value={text}
             />
+          </View>
+          <View style={styles.container}>
+            <Text style={styles.paragraph}>{texto}</Text>
           </View>
           <ScrollView style={styles.listArea}>
             <Items
