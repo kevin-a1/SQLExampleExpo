@@ -27,7 +27,7 @@ function openDatabase() {
   return db;
 }
 
-const db = openDatabase();
+const db = openDatabase(); 
 
 function Items({ done: doneHeading, onPressItem }) {
   const [items, setItems] = useState(null);
